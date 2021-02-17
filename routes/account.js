@@ -3,11 +3,113 @@ const { Account, Validate } = require("../models/account");
 const express = require("express");
 const router = express.Router();
 
-router.get("/", auth, async (req, res) => {
+/**
+ * @swagger
+ * components:
+ *    schemas:
+ *     Account:
+ *       type: object
+ *       required:
+ *          - name
+ *          - address
+ *          - city
+ *          - state
+ *          - postalCode
+ *          - gender
+ *          - phone
+ *          - dlNumber
+ *          - identificationNo
+ *       properties:
+ *         name:
+ *           type: string
+ *           description: The name of the Account
+ *         address:
+ *           type: string
+ *           description: Street address
+ *         city:
+ *           type: string
+ *           description: City
+ *         state:
+ *           type: string
+ *           description: State
+ *         postalCode:
+ *           type: number
+ *           description: Zip/Postal Code
+ *         gender:
+ *           type: string
+ *           description: Gender
+ *         phone:
+ *           type: number
+ *           description: Mobile Number
+ *         dlNumber:
+ *           type: string
+ *           description: Driver license number
+ *         identificationNo:
+ *           type: string
+ *           description: Identification/Aadhar card number
+ *       example:
+ *         name: Saroj Raj Swain
+ *         address: 2521 Forest Haven BLVD
+ *         city: Bhubaneswar
+ *         state: Odisha
+ *         postalCode: 02839
+ *         gender: M/F
+ *         phone: 1234567890
+ *         dlNumber: DL-001-OD
+ *         identificationNo: AA0024233
+ */
+
+/**
+ * @swagger
+ * tags:
+ *   name: Accounts
+ *   description: The Account Manging API
+ */
+/**
+ * @swagger
+ * /api/accounts:
+ *  get:
+ *    summary: returns the list of all Account Holders
+ *    tags: [Accounts]
+ *    responses:
+ *      200:
+ *        description: the lis of Account holders
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: array
+ *              items:
+ *                $ref: '#components/schemas/Account'
+ *
+ */
+
+router.get("/", async (req, res) => {
   const accounts = await Account.find();
   res.send(accounts);
 });
-
+/**
+ * @swagger
+ * /api/accounts/{id}:
+ *   get:
+ *     summary: Get the account by id
+ *     tags: [Accounts]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The account id
+ *     responses:
+ *       200:
+ *         description: The account description by id
+ *         contens:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Account'
+ *       404:
+ *         description: The account was not found
+ */
 router.get("/:id", auth, async (req, res) => {
   const account = await Account.findById({ _id: req.params.id });
   if (!account)
@@ -15,15 +117,65 @@ router.get("/:id", auth, async (req, res) => {
   res.send(account);
 });
 
-router.delete("/:id", async (req, res) => {
+/**
+ * @swagger
+ * /api/accounts/{id}:
+ *   delete:
+ *     summary: Remove the account by id
+ *     tags: [Accounts]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The account id
+ *
+ *     responses:
+ *       200:
+ *         description: The account was deleted
+ *       404:
+ *         description: The account was not found
+ */
+router.delete("/:id", auth, async (req, res) => {
   const account = await Account.deleteOne({ _id: req.params.id });
   if (!account)
     return res.status(404).send("The account with given ID not found");
 
   res.send(account);
 });
-
-router.put("/:id", async (req, res) => {
+/**
+ * @swagger
+ * /api/accounts/{id}:
+ *  put:
+ *    summary: Update the account by the id
+ *    tags: [Accounts]
+ *    parameters:
+ *      - in: path
+ *        name: id
+ *        schema:
+ *          type: string
+ *        required: true
+ *        description: The account id
+ *    requestBody:
+ *      required: true
+ *      content:
+ *        application/json:
+ *          schema:
+ *            $ref: '#/components/schemas/Account'
+ *    responses:
+ *      200:
+ *        description: The account was updated
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/Account'
+ *      404:
+ *        description: The account was not found
+ *      500:
+ *        description: Some error happened
+ */
+router.put("/:id", auth, async (req, res) => {
   const { error } = Validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
@@ -47,8 +199,30 @@ router.put("/:id", async (req, res) => {
     return res.status(404).send("The account with given ID not found");
   res.send(account);
 });
+/**
+ * @swagger
+ * /api/accounts:
+ *     post:
+ *      summary: Create a new Account
+ *      tags: [Accounts]
+ *      requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Account'
+ *      responses:
+ *       200:
+ *         description: The account was successfully created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Account'
+ *      500:
+ *         description: Some server error
+ */
 
-router.post("/", async (req, res) => {
+router.post("/", auth, async (req, res) => {
   const { error } = Validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 

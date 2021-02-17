@@ -1,5 +1,6 @@
 const { AccountSchema } = require("./account");
 const Joi = require("joi");
+Joi.objectId = require("joi-objectid")(Joi);
 const mongoose = require("mongoose");
 
 const Data = mongoose.model(
@@ -66,6 +67,7 @@ const Data = mongoose.model(
 
 function validateData(data) {
   const schema = Joi.object({
+    accountId: Joi.objectId(),
     policy: Joi.object({
       premium: Joi.number(),
       // accountId: Joi.objectId().required(),
@@ -77,7 +79,9 @@ function validateData(data) {
         make: Joi.string().required(),
         model: Joi.string().required(),
         year: Joi.number().required(),
+        color: Joi.string().required(),
         chacisNo: Joi.string().required(),
+        premium: Joi.number(),
       }),
     }),
   });

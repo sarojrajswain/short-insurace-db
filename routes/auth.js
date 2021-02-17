@@ -5,6 +5,32 @@ const { User } = require("../models/users");
 const express = require("express");
 const router = express.Router();
 
+/**
+ * @swagger
+ * tags:
+ *  name: Authorization
+ *  description: this generates JWT token to run other requests
+ * /api/auth:
+ *  post:
+ *    tags: [Authorization]
+ *    requestBody:
+ *      required: true
+ *      content:
+ *        application/json:
+ *          schema:
+ *            type: object
+ *            properties:
+ *              email:
+ *                type: string
+ *                default:  sarojrajswain33@gmail.com
+ *              password:
+ *                type: string
+ *                default:  12345
+ *    responses:
+ *      200:
+ *        description: JWT token
+ *
+ */
 router.post("/", async (req, res) => {
   const { error } = validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
