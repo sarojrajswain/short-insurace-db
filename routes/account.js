@@ -1,3 +1,4 @@
+const admin = require("../middleware/admin");
 const auth = require("../middleware/auth");
 const { Account, Validate } = require("../models/account");
 const express = require("express");
@@ -53,7 +54,7 @@ const router = express.Router();
  *         city: Bhubaneswar
  *         state: Odisha
  *         postalCode: 02839
- *         gender: M/F
+ *         gender: M
  *         phone: 1234567890
  *         dlNumber: DL-001-OD
  *         identificationNo: AA0024233
@@ -83,7 +84,7 @@ const router = express.Router();
  *
  */
 
-router.get("/", async (req, res) => {
+router.get("/", auth, async (req, res) => {
   const accounts = await Account.find();
   res.send(accounts);
 });
@@ -222,11 +223,12 @@ router.put("/:id", auth, async (req, res) => {
  *         description: Some server error
  */
 
-router.post("/", auth, async (req, res) => {
+router.post("/", [auth, admin], async (req, res) => {
   const { error } = Validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
   let account = new Account({
+    _id: req.user._id,
     name: req.body.name,
     address: req.body.address,
     city: req.body.city,

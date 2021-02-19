@@ -2,6 +2,7 @@ const auth = require("../middleware/auth");
 const express = require("express");
 const router = express.Router();
 const { Data, validate } = require("../models/data");
+const { Account } = require("../models/account");
 /**
  * @swagger
  * components:
@@ -146,7 +147,7 @@ router.post("/", auth, async (req, res) => {
 
   let data = new Data({
     account: {
-      _id: "6023dd2472bc86767c9f0009",
+      _id: req.user._id,
     },
     policy: {
       effectiveDate: req.body.policy.effectiveDate,
@@ -214,7 +215,7 @@ router.put("/:policyNumber", auth, async (req, res) => {
     },
     {
       account: {
-        _id: "6023dd2472bc86767c9f0009",
+        _id: req.user._id,
       },
       policy: {
         effectiveDate: req.body.policy.effectiveDate,
