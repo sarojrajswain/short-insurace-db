@@ -11,6 +11,7 @@ require("./startup/logging")();
 require("./startup/routes")(app);
 require("./startup/config")();
 require("./startup/db")();
+require("dotenv").config();
 
 const port = process.env.PORT || 4000;
 
@@ -25,7 +26,7 @@ const options = {
     },
     servers: [
       {
-        url: "http://localhost:4000",
+        url: `http://localhost:${port}`,
       },
     ],
     components: {

@@ -5,12 +5,12 @@ const Joi = require("joi");
 const { bool } = require("joi");
 
 const userSchema = mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    minLength: 5,
-    maxLength: 50,
-  },
+  // name: {
+  //   type: String,
+  //   required: true,
+  //   minLength: 5,
+  //   maxLength: 50,
+  // },
   email: {
     type: String,
     required: true,
@@ -31,8 +31,8 @@ const userSchema = mongoose.Schema({
 
 userSchema.methods.generateAuthToken = function () {
   const token = jwt.sign(
-    { _id: this._id, isAdmin: this.isAdmin },
-    config.get("jwtPrivateKey")
+    { _id: this._id, email: this.email, isAdmin: this.isAdmin },
+    process.env.jwtPrivateKey
   );
   return token;
 };
@@ -42,9 +42,10 @@ const User = mongoose.model("User", userSchema);
 function validateUser(req) {
   const schema = Joi.object({
     isAdmin: Joi.boolean(),
-    name: Joi.string().required().min(5).max(50),
+    //name: Joi.string().required().min(5).max(50),
     password: Joi.string().required().min(5).max(255),
     email: Joi.string().required().min(5).max(255).email(),
+    confirmpassword: Joi.string().required().min(5).max(255),
   });
 
   return schema.validate(req);

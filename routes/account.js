@@ -1,6 +1,7 @@
 const admin = require("../middleware/admin");
 const auth = require("../middleware/auth");
 const { Account, Validate } = require("../models/account");
+const { User } = require("../models/users");
 const express = require("express");
 const router = express.Router();
 
@@ -180,10 +181,18 @@ router.put("/:id", auth, async (req, res) => {
   const { error } = Validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
+  const { email } = await User.findById({ _id: req.user._id }).select("email");
+
+  if (!email)
+    return res
+      .status(400)
+      .send("No registered email-id exists for the given Account ID");
+
   const account = await Account.findOneAndUpdate(
     { _id: req.params.id },
     {
       name: req.body.name,
+      email: email,
       address: req.body.address,
       city: req.body.city,
       state: req.body.state,
@@ -223,13 +232,15 @@ router.put("/:id", auth, async (req, res) => {
  *         description: Some server error
  */
 
-router.post("/", [auth, admin], async (req, res) => {
+router.post("/", [auth], async (req, res) => {
   const { error } = Validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
+  const { email } = await User.findById({ _id: req.user._id }).select("email");
+
   let account = new Account({
-    _id: req.user._id,
     name: req.body.name,
+    email: email,
     address: req.body.address,
     city: req.body.city,
     state: req.body.state,

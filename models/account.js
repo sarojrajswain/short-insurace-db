@@ -6,6 +6,10 @@ const accountSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  email: {
+    type: String,
+    required: true,
+  },
   address: {
     type: String,
     required: true,
@@ -46,6 +50,7 @@ const Account = mongoose.model("Account", accountSchema);
 function ValidateAccount(Account) {
   const schema = Joi.object({
     name: Joi.string().required(),
+    email: Joi.string().email(),
     address: Joi.string().required(),
     city: Joi.string().required(),
     state: Joi.string().required(),

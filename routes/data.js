@@ -1,8 +1,9 @@
 const auth = require("../middleware/auth");
+const currencyFormatter = require("currency-formatter");
 const express = require("express");
 const router = express.Router();
 const { Data, validate } = require("../models/data");
-const { Account } = require("../models/account");
+const { PolicyPreview, quoteValidate } = require("../models/previewPolicy");
 /**
  * @swagger
  * components:
@@ -53,6 +54,49 @@ const { Account } = require("../models/account");
  *            color: black
  *            chacisNo: CHIS-001
  *            premium: 3499
+ *     Quote:
+ *       type: object
+ *       properties:
+ *         policy:
+ *          type: object
+ *          properties:
+ *            premium:
+ *              type: number
+ *            limit:
+ *              type: number
+ *            areYouStudent:
+ *              type: boolean
+ *            riderClub:
+ *              type: boolean
+ *            risk:
+ *              type: object
+ *              properties:
+ *                vehicleType:
+ *                  type: string
+ *                make:
+ *                  type: string
+ *                model:
+ *                  type: string
+ *                year:
+ *                  type: number
+ *                color:
+ *                  type: string
+ *                chacisNo:
+ *                  type: string
+ *                premium:
+ *                  type: number
+ *       example:
+ *         policy:
+ *          limit: 5000
+ *          areYouStudent: false
+ *          riderClub: false
+ *          risk:
+ *            vehicleType: 2W
+ *            make: toyota
+ *            model: camry
+ *            year: 2021
+ *            color: black
+ *            chacisNo: CHIS-001
  */
 
 /**
@@ -118,6 +162,63 @@ router.get("/:policyNumber", auth, async (req, res) => {
   res.send(policy);
 });
 
+/**
+ * @swagger
+ * /api/data/quotePreview:
+ *  post:
+ *    summary: Quote Preview
+ *    tags: [Policy]
+ *    requestBody:
+ *      required: true
+ *      content:
+ *        application/json:
+ *          schema:
+ *              $ref: '#components/schemas/Quote'
+ *    responses:
+ *      200:
+ *        description: Preview Quote is available
+ *        content:
+ *          application/json:
+ *            schems:
+ *              $ref: '#components/schemas/Quote'
+ *      500:
+ *        description: something went wrong
+ */
+router.post("/quotePreview", async (req, res) => {
+  console.log(req.body);
+  const { error } = quoteValidate(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
+
+  let policyPreview = new PolicyPreview({
+    policy: {
+      premium: req.body.policy.limit * 0.2,
+      limit: req.body.policy.limit,
+      areYouStudent: req.body.policy.areYouStudent,
+      riderClub: req.body.policy.riderClub,
+      risk: {
+        vechicleType: req.body.policy.risk.vechicleType,
+        make: req.body.policy.risk.make,
+        model: req.body.policy.risk.model,
+        year: req.body.policy.risk.year,
+        color: req.body.policy.risk.color,
+        chacisNo: req.body.policy.risk.chacisNo,
+        premium: req.body.policy.limit * 0.2,
+      },
+    },
+  });
+  policyPreview
+    .save()
+    .then(function (result) {
+      res.status(201).json({
+        message: "Handling Data request to /quotePreview",
+        "expected Premium Amount": currencyFormatter.format(
+          result.policy.premium,
+          { code: "INR" }
+        ),
+      });
+    })
+    .catch((err) => res.send(err));
+});
 /**
  * @swagger
  * /api/data:
