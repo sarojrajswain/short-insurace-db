@@ -3,8 +3,10 @@ const auth = require("../middleware/auth");
 const { Account, Validate } = require("../models/account");
 const { User } = require("../models/users");
 const express = require("express");
+const { json } = require("express");
 const router = express.Router();
-
+const _ = require("lodash");
+const { query } = require("../startup/logger");
 /**
  * @swagger
  * components:
@@ -12,19 +14,30 @@ const router = express.Router();
  *     Account:
  *       type: object
  *       required:
- *          - name
+ *          - firstName
+ *          - lastName
+ *          - dateOfBirth
+ *          - gender
  *          - address
  *          - city
  *          - state
  *          - postalCode
- *          - gender
- *          - phone
- *          - dlNumber
- *          - identificationNo
+ *          - driverLicense
+ *          - phoneNo
+ *          - email
  *       properties:
- *         name:
+ *         firstName:
  *           type: string
- *           description: The name of the Account
+ *           description: First Name of the Account
+ *         lastName:
+ *           type: string
+ *           description: Last Name of the Account
+ *         dateOfBirth:
+ *           type: string
+ *           description: Date of Birth
+ *         gender:
+ *           type: string
+ *           description: Gender
  *         address:
  *           type: string
  *           description: Street address
@@ -37,28 +50,27 @@ const router = express.Router();
  *         postalCode:
  *           type: number
  *           description: Zip/Postal Code
- *         gender:
- *           type: string
- *           description: Gender
- *         phone:
+ *         driverLicense:
  *           type: number
- *           description: Mobile Number
- *         dlNumber:
+ *           description: Driver LicenseNumber
+ *         phoneNo:
  *           type: string
- *           description: Driver license number
- *         identificationNo:
+ *           description: Phone Number
+ *         email:
  *           type: string
- *           description: Identification/Aadhar card number
+ *           description: Email Address
  *       example:
- *         name: Saroj Raj Swain
+ *         firstName: Saroj Raj
+ *         lastName: Swain
+ *         dateOfBirth: 01/01/1980
+ *         gender: M
  *         address: 2521 Forest Haven BLVD
  *         city: Bhubaneswar
  *         state: Odisha
  *         postalCode: 02839
- *         gender: M
- *         phone: 1234567890
- *         dlNumber: DL-001-OD
- *         identificationNo: AA0024233
+ *         driverLicense: DL-001-OD
+ *         phoneNo: 1234567890
+ *         email: sarojrajswain@gmail.com
  */
 
 /**
@@ -73,6 +85,13 @@ const router = express.Router();
  *  get:
  *    summary: returns the list of all Account Holders
  *    tags: [Accounts]
+ *    parameters:
+ *       - in: query
+ *         name: params
+ *         schema:
+ *           type: object
+ *           additionalProperties:
+ *             type: string
  *    responses:
  *      200:
  *        description: the lis of Account holders
@@ -85,9 +104,16 @@ const router = express.Router();
  *
  */
 
-router.get("/", auth, async (req, res) => {
-  const accounts = await Account.find();
-  res.send(accounts);
+router.get("/", async (req, res) => {
+  if (req.query) {
+    const key = _.keys(req.query)[0];
+    const value = _.values(req.query)[0];
+    const account = await Account.findOne({ [key]: value });
+    res.send(account);
+  } else {
+    const accounts = await Account.find();
+    res.send(accounts);
+  }
 });
 /**
  * @swagger
@@ -116,6 +142,36 @@ router.get("/:id", auth, async (req, res) => {
   const account = await Account.findById({ _id: req.params.id });
   if (!account)
     return res.status(404).send("The account with given ID not found");
+  res.send(account);
+});
+
+/**
+ * @swagger
+ * /api/accounts/{email}:
+ *   get:
+ *     summary: Get the account by email-id
+ *     tags: [Accounts]
+ *     parameters:
+ *       - in: path
+ *         name: email
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The email id
+ *     responses:
+ *       200:
+ *         description: The account description by email id
+ *         contens:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Account'
+ *       404:
+ *         description: The account was not found
+ */
+router.get("/email/:email", auth, async (req, res) => {
+  const account = await Account.findOne({ email: req.query.email });
+  if (!account)
+    return res.status(404).send("The account with given email not found");
   res.send(account);
 });
 
@@ -191,16 +247,17 @@ router.put("/:id", auth, async (req, res) => {
   const account = await Account.findOneAndUpdate(
     { _id: req.params.id },
     {
-      name: req.body.name,
-      email: email,
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+      dateOfBirth: req.body.dateOfBirth,
+      gender: req.body.gender,
       address: req.body.address,
       city: req.body.city,
       state: req.body.state,
       postalCode: req.body.postalCode,
-      gender: req.body.gender,
-      phone: req.body.phone,
-      dlNumber: req.body.dlNumber,
-      identificationNo: req.body.identificationNo,
+      driverLicense: req.body.driverLicense,
+      phoneNo: req.body.phoneNo,
+      email: email,
     },
     { new: true }
   );
@@ -233,22 +290,24 @@ router.put("/:id", auth, async (req, res) => {
  */
 
 router.post("/", [auth], async (req, res) => {
+  console.log(req.body);
   const { error } = Validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
   const { email } = await User.findById({ _id: req.user._id }).select("email");
 
   let account = new Account({
-    name: req.body.name,
-    email: email,
+    firstName: req.body.firstName,
+    lastName: req.body.lastName,
+    dateOfBirth: req.body.dateOfBirth,
+    gender: req.body.gender,
     address: req.body.address,
     city: req.body.city,
     state: req.body.state,
     postalCode: req.body.postalCode,
-    gender: req.body.gender,
-    phone: req.body.phone,
-    dlNumber: req.body.dlNumber,
-    identificationNo: req.body.identificationNo,
+    driverLicense: req.body.driverLicense,
+    phoneNo: req.body.phoneNo,
+    email: email,
   });
   account = await account.save();
   res.send(account);
