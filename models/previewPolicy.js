@@ -23,7 +23,7 @@ const PolicyPreview = mongoose.model(
           required: true,
           default: false,
         },
-        riderClub: {
+        areYouPartOfRiderClub: {
           type: Boolean,
           required: true,
           default: false,
@@ -47,13 +47,6 @@ const PolicyPreview = mongoose.model(
               type: String,
               required: true,
             },
-            color: {
-              type: String,
-            },
-            chacisNo: {
-              type: String,
-              required: true,
-            },
             premium: {
               type: Number,
             },
@@ -70,14 +63,12 @@ function validateData(previewPolicy) {
       premium: Joi.number(),
       limit: Joi.number().required(),
       areYouStudent: Joi.boolean(),
-      riderClub: Joi.boolean(),
+      areYouPartOfRiderClub: Joi.boolean(),
       risk: Joi.object({
         vehicleType: Joi.string().required(),
         make: Joi.string().required(),
         model: Joi.string().required(),
         year: Joi.number().required(),
-        color: Joi.string().required(),
-        chacisNo: Joi.string().required(),
         premium: Joi.number(),
       }),
     }),

@@ -1,4 +1,4 @@
 {
     "jwtPrivateKey":"",
-    "db":"mongodb://localhost/shortInsurance"
+    "db":"mongodb+srv://admin:pass123@cluster0.fpzfy.mongodb.net/shortInsurance?retryWrites=true&w=majority"
 }

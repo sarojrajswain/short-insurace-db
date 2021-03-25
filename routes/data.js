@@ -66,7 +66,7 @@ const { PolicyPreview, quoteValidate } = require("../models/previewPolicy");
  *              type: number
  *            areYouStudent:
  *              type: boolean
- *            riderClub:
+ *            areYouPartOfRiderClub:
  *              type: boolean
  *            risk:
  *              type: object
@@ -79,10 +79,6 @@ const { PolicyPreview, quoteValidate } = require("../models/previewPolicy");
  *                  type: string
  *                year:
  *                  type: number
- *                color:
- *                  type: string
- *                chacisNo:
- *                  type: string
  *                premium:
  *                  type: number
  *       example:
@@ -194,14 +190,12 @@ router.post("/quotePreview", async (req, res) => {
       premium: req.body.policy.limit * 0.2,
       limit: req.body.policy.limit,
       areYouStudent: req.body.policy.areYouStudent,
-      riderClub: req.body.policy.riderClub,
+      areYouPartOfRiderClub: req.body.policy.areYouPartOfRiderClub,
       risk: {
         vechicleType: req.body.policy.risk.vechicleType,
         make: req.body.policy.risk.make,
         model: req.body.policy.risk.model,
         year: req.body.policy.risk.year,
-        color: req.body.policy.risk.color,
-        chacisNo: req.body.policy.risk.chacisNo,
         premium: req.body.policy.limit * 0.2,
       },
     },
