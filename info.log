@@ -1,0 +1,8 @@
+{"message":"info message","level":"info","timestamp":"2021-04-03T22:54:26.947Z"}
+{"level":"error","message":"Cannot read property 'details' of undefined","err":{},"timestamp":"2021-04-03T22:54:26.948Z"}
+{"message":"info message","level":"info","timestamp":"2021-04-03T23:38:35.684Z"}
+{"level":"error","message":"account is not defined","err":{},"timestamp":"2021-04-03T23:38:35.684Z"}
+{"message":"info message","level":"info","timestamp":"2021-04-03T23:39:52.818Z"}
+{"level":"error","message":"account is not defined","err":{},"timestamp":"2021-04-03T23:39:52.818Z"}
+{"message":"info message","level":"info","timestamp":"2021-04-03T23:40:33.168Z"}
+{"level":"error","message":"account is not defined","err":{},"timestamp":"2021-04-03T23:40:33.168Z"}

@@ -105,14 +105,14 @@ const { query } = require("../startup/logger");
  */
 
 router.get("/", async (req, res) => {
-  if (req.query) {
+  if (Object.keys(req.query).length === 0) {
+    const accounts = await Account.find();
+    res.send(accounts);
+  } else {
     const key = _.keys(req.query)[0];
     const value = _.values(req.query)[0];
     const account = await Account.findOne({ [key]: value });
     res.send(account);
-  } else {
-    const accounts = await Account.find();
-    res.send(accounts);
   }
 });
 /**

@@ -4,6 +4,8 @@ const express = require("express");
 const router = express.Router();
 const { Data, validate } = require("../models/data");
 const { PolicyPreview, quoteValidate } = require("../models/previewPolicy");
+const { AccountSchema, Account } = require("../models/account");
+const _ = require('lodash')
 /**
  * @swagger
  * components:
@@ -13,7 +15,8 @@ const { PolicyPreview, quoteValidate } = require("../models/previewPolicy");
  *       required:
  *          - policyNumber
  *       properties:
- *         accountId: string
+ *         accountId: 
+ *          type: string
  *         policy:
  *          type: object
  *          properties:
@@ -25,9 +28,19 @@ const { PolicyPreview, quoteValidate } = require("../models/previewPolicy");
  *              type: string
  *            premium:
  *              type: number
+ *            limit:
+ *              type: number
+ *            partOfRiderClub:
+ *              type: boolean
+ *            areYouStudent:
+ *              type: boolean
+ *            acceptTerms:
+ *              type: boolean
  *            risk:
  *              type: object
  *              properties:
+ *                vehicleType:
+ *                  type: string
  *                make:
  *                  type: string
  *                model:
@@ -41,13 +54,18 @@ const { PolicyPreview, quoteValidate } = require("../models/previewPolicy");
  *                premium:
  *                  type: number
  *       example:
- *         accountId: 6023dd2472bc86767c9f0009
+ *         accountId: "6023dd2472bc86767c9f0009"
  *         policy:
  *          effectiveDate: 2021-01-01
  *          expirationDate: 2022-01-01
  *          policyNumber: "2222"
  *          premium: 40000
+ *          limit: 2000
+ *          areYouStudent: true
+ *          partOfRiderClub: true
+ *          acceptTerms: true
  *          risk:
+ *            vehicleType: 2W
  *            make: toyota
  *            model: camry
  *            year: 2021
@@ -120,8 +138,15 @@ const { PolicyPreview, quoteValidate } = require("../models/previewPolicy");
  */
 
 router.get("/", auth, async (req, res) => {
-  const records = await Data.find();
-  res.send(records);
+  if (Object.keys(req.query).length === 0) {
+    const records = await Data.find();
+    res.send(records);
+  } else {
+    const key = _.keys(req.query)[0];
+    const value = _.values(req.query)[0];
+    const data = await Data.findOne({ [key]: value });
+    res.send(data);
+  }
 });
 
 /**
@@ -237,27 +262,42 @@ router.post("/quotePreview", async (req, res) => {
  */
 
 router.post("/", auth, async (req, res) => {
+  console.log(req.body);
+  
   const { error } = validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
-
-  let data = new Data({
-    account: {
-      _id: req.user._id,
-    },
-    policy: {
-      effectiveDate: req.body.policy.effectiveDate,
-      expirationDate: req.body.policy.expirationDate,
-      policyNumber: req.body.policy.policyNumber,
-      premium: 33343,
-      risk: {
-        make: req.body.policy.risk.make,
-        model: req.body.policy.risk.model,
-        year: req.body.policy.risk.year,
-        chacisNo: req.body.policy.risk.chacisNo,
-        premium: 2000,
+  
+  const account = await Account.findOne({_id:req.body.accountId});
+  
+    let data = new Data({
+      account: {
+        _id: account._id,
+        name: account.firstName,
       },
-    },
-  });
+      policy: {
+        effectiveDate: req.body.policy.effectiveDate,
+        expirationDate: req.body.policy.expirationDate,
+        policyNumber: req.body.policy.policyNumber,
+        premium: 33343,
+        limit: req.body.policy.limit,
+        areYouStudent: req.body.policy.areYouStudent,
+        partOfRiderClub: req.body.policy.partOfRiderClub,
+        acceptTerms: req.body.policy.acceptTerms,
+        risk: {
+          vehicleType:  req.body.policy.risk.vehicleType,
+          make: req.body.policy.risk.make,
+          model: req.body.policy.risk.model,
+          year: req.body.policy.risk.year,
+          chacisNo: req.body.policy.risk.chacisNo,
+          color: req.body.policy.risk.color,
+          premium: 2000,
+        },
+      },
+    });  
+  
+
+  console.log("data:")
+  console.log(data);
   data
     .save()
     .then(function (result) {
@@ -301,6 +341,7 @@ router.post("/", auth, async (req, res) => {
  *        description: something went wrong
  */
 router.put("/:policyNumber", auth, async (req, res) => {
+  console.log(req.user._id, ":" + req.body.accountId);
   const { error } = validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
@@ -316,13 +357,18 @@ router.put("/:policyNumber", auth, async (req, res) => {
         effectiveDate: req.body.policy.effectiveDate,
         expirationDate: req.body.policy.expirationDate,
         policyNumber: req.body.policy.policyNumber,
-        premium: 33343,
+        premium: req.body.policy.premium,
+        limit: req.body.policy.limit,
+        areYouStudent: req.body.policy.areYouStudent,
+        partOfRiderClub: req.body.policy.partOfRiderClub,
         risk: {
+          vehicleType:  req.body.policy.risk.vehicleType,
           make: req.body.policy.risk.make,
           model: req.body.policy.risk.model,
           year: req.body.policy.risk.year,
           chacisNo: req.body.policy.risk.chacisNo,
-          premium: 2000,
+          color: req.body.policy.risk.color,
+          premium: req.body.policy.risk.premium,
         },
       },
     },

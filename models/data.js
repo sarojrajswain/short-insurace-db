@@ -11,8 +11,9 @@ const Data = mongoose.model(
     },
     account: {
       type: new mongoose.Schema({
-        _id: {
+        name:   {
           type: String,
+          required:   true,
         },
       }),
       required: true,
@@ -20,11 +21,11 @@ const Data = mongoose.model(
     policy: {
       type: new mongoose.Schema({
         effectiveDate: {
-          type: Date,
+          type: String,
           required: true,
         },
         expirationDate: {
-          type: Date,
+          type: String,
           required: true,
         },
         policyNumber: {
@@ -34,8 +35,28 @@ const Data = mongoose.model(
         premium: {
           type: Number,
         },
+        limit: {
+          type: Number,
+          required: true,
+        },
+        partOfRiderClub: {
+          type: Boolean,
+          required: true,
+        },
+        areYouStudent: {
+          type: Boolean,
+          required: true,
+        },
+        acceptTerms:{
+          type: Boolean,
+          required: true,
+        },
         risk: {
           type: new mongoose.Schema({
+            vehicleType: {
+              type: String,
+              required: true,
+            },
             make: {
               type: String,
               required: true,
@@ -67,15 +88,19 @@ const Data = mongoose.model(
 
 function validateData(data) {
   const schema = Joi.object({
-    accountId: Joi.objectId(),
+    accountId: Joi.objectId().required(),
     policy: Joi.object({
       premium: Joi.number(),
-      // accountId: Joi.objectId().required(),
-      effectiveDate: Joi.date().required(),
-      expirationDate: Joi.date().required(),
+      acceptTerms: Joi.boolean(),
+      effectiveDate: Joi.string().required(),
+      expirationDate: Joi.string().required(),
       policyNumber: Joi.string().required(),
       premium: Joi.number(),
+      limit: Joi.number().required(),
+      areYouStudent: Joi.boolean(),
+      partOfRiderClub: Joi.boolean(),
       risk: Joi.object({
+        vehicleType: Joi.string().required(),
         make: Joi.string().required(),
         model: Joi.string().required(),
         year: Joi.number().required(),

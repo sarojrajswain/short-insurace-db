@@ -13,8 +13,8 @@ require("./startup/config")();
 require("./startup/db")();
 require("dotenv").config();
 
-const port = process.env.PORT || 4000;
-
+//const port = process.env.PORT || 4000;
+const port = 4000;
 // Extended: https://swagger.io/specification/#infoObject
 const options = {
   definition: {
